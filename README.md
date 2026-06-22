@@ -56,6 +56,21 @@ If you'd rather build the image yourself, edit `docker-compose.yml` to comment o
 docker compose up -d --build
 ```
 
+## Development
+
+For a quick way to test changes, use the dev compose file. It builds the image
+from local source (no GHCR pull) and mounts `main.py`, so code edits apply on a
+restart without rebuilding:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build      # first run / after dep changes
+# ...edit main.py...
+docker compose -f docker-compose.dev.yml restart         # pick up code changes
+```
+
+Set `DISCORD_TOKEN_DEV` in `.env` to point the dev container at a separate test
+bot; if unset it falls back to `DISCORD_TOKEN`.
+
 ## Running without Docker
 
 Requires Python 3.13+ and `ffmpeg` installed on your system.

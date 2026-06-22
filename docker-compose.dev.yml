@@ -1,0 +1,20 @@
+name: songkisser-dev
+
+# Local development: builds the image from source instead of pulling from GHCR,
+# and mounts main.py so code edits apply on a restart (no rebuild needed).
+#
+#   docker compose -f docker-compose.dev.yml up --build        # first run
+#   docker compose -f docker-compose.dev.yml restart           # after editing main.py
+#   docker compose -f docker-compose.dev.yml up --build -d     # after editing requirements.txt
+#
+# Uses DISCORD_TOKEN_DEV if set (a separate test bot), otherwise DISCORD_TOKEN.
+
+services:
+  songkisser:
+    build: .
+    container_name: songkisser-dev
+    restart: "no"
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN_DEV:-${DISCORD_TOKEN}}
+    volumes:
+      - ./main.py:/app/main.py:ro
