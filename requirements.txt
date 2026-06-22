@@ -9,3 +9,6 @@ radio-browser==0.0.1
 
 # Required by radio-browser (it does not declare this dependency itself)
 requests==2.34.2
+
+# Loads a local .env file when running directly (no-op inside Docker)
+python-dotenv==1.2.2

@@ -73,13 +73,19 @@ bot; if unset it falls back to `DISCORD_TOKEN`.
 
 ## Running without Docker
 
-Requires Python 3.13+ and `ffmpeg` installed on your system.
+This is the quickest way to test changes. Requires Python 3.13+ and `ffmpeg`
+installed and on your `PATH`.
 
 ```bash
+python -m venv .venv
+# Windows:        .venv\Scripts\activate
+# macOS / Linux:  source .venv/bin/activate
 pip install -r requirements.txt
-export DISCORD_TOKEN=your-discord-bot-token-here   # Windows: set DISCORD_TOKEN=...
 python main.py
 ```
+
+The bot loads your token from a `.env` file automatically (copy `.env.example`
+to `.env` and set `DISCORD_TOKEN`), so there's nothing else to export.
 
 ## Configuration
 

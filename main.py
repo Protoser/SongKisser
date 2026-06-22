@@ -6,6 +6,10 @@ import yt_dlp
 import asyncio
 from collections import defaultdict, deque
 import os
+from dotenv import load_dotenv
+
+# Load variables from a local .env file if present (no-op in Docker)
+load_dotenv()
 
 # Configure the bot
 intents = discord.Intents.default()
