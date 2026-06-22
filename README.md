@@ -1,15 +1,28 @@
 # SongKisser
 
-A Discord music bot that plays YouTube audio and internet radio stations in voice channels.
+A Discord music bot that plays YouTube audio and internet radio stations in voice
+channels, with a live "Now Playing" panel, artwork, and interactive buttons.
 
 ## Commands
 
 | Command | Description |
 | --- | --- |
-| `/play <url>` | Queue and play a YouTube song |
-| `/search <station_name>` | Search and play an internet radio station |
+| `/play <link or search>` | Play a YouTube link, or search and pick from a dropdown |
+| `/search <station_name>` | Search internet radio and pick a station from a dropdown |
+| `/queue` | Show the queue |
+| `/nowplaying` | Show the current track with a progress bar |
 | `/skip` | Skip the current song/stream |
-| `/stop` | Stop playback and clear the queue |
+| `/pause` · `/resume` | Pause or resume playback |
+| `/shuffle` | Shuffle the queue |
+| `/remove <position>` | Remove a track from the queue |
+| `/clear` | Clear the queue (keeps the current track) |
+| `/volume <0-100>` | Set the playback volume |
+| `/loop` | Toggle looping of the current track |
+| `/stop` · `/leave` | Stop and disconnect |
+
+The **Now Playing** message updates live with a progress bar and carries buttons
+(pause/resume, skip, stop, loop, shuffle, queue, and a link to the source) so you
+can control playback without typing commands.
 
 ## Running with Docker Compose
 
@@ -60,6 +73,16 @@ docker compose up -d --build
 
 This is the quickest way to test changes. Requires Python 3.13+ and `ffmpeg`
 installed and on your `PATH`.
+
+The helper scripts create a virtualenv (first run only), install dependencies,
+and start the bot:
+
+```bash
+run.bat        # Windows (double-click or run from a terminal)
+./run.sh       # macOS / Linux
+```
+
+Or do it by hand:
 
 ```bash
 python -m venv .venv

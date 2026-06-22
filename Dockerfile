@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY main.py .
+COPY songkisser ./songkisser
 
 # Run as a non-root user
 RUN useradd --create-home --uid 1000 appuser

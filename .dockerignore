@@ -7,4 +7,5 @@ __pycache__/
 .venv/
 venv/
 README.md
-test.py
+run.bat
+run.sh
