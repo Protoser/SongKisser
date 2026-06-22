@@ -1,0 +1,11 @@
+# Discord bot library (the [voice] extra pulls in PyNaCl, required for voice)
+discord.py[voice]==2.7.1
+
+# YouTube / audio extraction
+yt-dlp==2026.6.9
+
+# Radio station lookup
+radio-browser==0.0.1
+
+# Required by radio-browser (it does not declare this dependency itself)
+requests==2.34.2

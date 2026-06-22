@@ -1,0 +1,10 @@
+services:
+  songkisser:
+    # Pull the prebuilt image from GitHub Container Registry.
+    # To build locally instead, comment out `image:` and uncomment `build: .`
+    image: ghcr.io/protoser/songkisser:latest
+    # build: .
+    container_name: songkisser
+    restart: unless-stopped
+    env_file:
+      - .env
