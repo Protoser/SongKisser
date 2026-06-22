@@ -1,10 +1,18 @@
+name: songkisser
+
 services:
   songkisser:
-    # Pull the prebuilt image from GitHub Container Registry.
-    # To build locally instead, comment out `image:` and uncomment `build: .`
-    image: ghcr.io/protoser/songkisser:latest
+    # Image is pulled from GHCR. GITHUB_REPOSITORY must be lowercase (e.g.
+    # protoser/songkisser). To build locally instead, comment out `image:`
+    # and uncomment `build: .`
+    image: ghcr.io/${GITHUB_REPOSITORY}:latest
     # build: .
     container_name: songkisser
-    restart: unless-stopped
-    env_file:
-      - .env
+    restart: always
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M

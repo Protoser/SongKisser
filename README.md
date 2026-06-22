@@ -24,11 +24,15 @@ The bot is published as a container image to GitHub Container Registry (GHCR).
    curl -o .env https://raw.githubusercontent.com/Protoser/SongKisser/main/.env.example
    ```
 
-3. **Add your token** to `.env`:
+3. **Fill in `.env`** — your Discord token, and the (lowercase) repo for the image tag:
 
    ```env
    DISCORD_TOKEN=your-discord-bot-token-here
+   GITHUB_REPOSITORY=protoser/songkisser
    ```
+
+   Compose reads these from `.env` automatically: `GITHUB_REPOSITORY` selects the
+   `ghcr.io/<repo>:latest` image, and `DISCORD_TOKEN` is passed into the container.
 
 4. **Authenticate to GHCR** (the package is private, so a GitHub token with `read:packages` is required):
 
