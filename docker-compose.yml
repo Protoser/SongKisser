@@ -11,8 +11,17 @@ services:
     restart: always
     environment:
       DISCORD_TOKEN: ${DISCORD_TOKEN}
+      # Comma-separated Discord user IDs granted global admin access (optional).
+      BOT_ADMINS: ${BOT_ADMINS:-}
+      # Store the settings DB on the mounted volume so it survives restarts.
+      SONGKISSER_DB: /data/songkisser.db
+    volumes:
+      - songkisser-data:/data
     deploy:
       resources:
         limits:
           cpus: '0.50'
           memory: 256M
+
+volumes:
+  songkisser-data:

@@ -21,6 +21,26 @@ def fmt_time(seconds: Optional[float]) -> str:
     return f"{m}:{s:02d}"
 
 
+def parse_time(value: str) -> Optional[float]:
+    """Parse '83', '1:23' or '1:02:03' into seconds. Returns None if invalid."""
+    value = value.strip()
+    if not value:
+        return None
+    parts = value.split(":")
+    if len(parts) > 3:
+        return None
+    try:
+        nums = [int(p) for p in parts]
+    except ValueError:
+        return None
+    if any(n < 0 for n in nums):
+        return None
+    seconds = 0
+    for n in nums:
+        seconds = seconds * 60 + n
+    return float(seconds)
+
+
 @dataclass
 class Track:
     """Metadata for a queued item. The actual ffmpeg source is built lazily, at
@@ -51,6 +71,11 @@ class GuildState:
     text_channel: Optional[discord.abc.Messageable] = None
     volume: float = DEFAULT_VOLUME
     loop: bool = False
+    audio_filter: str = "none"  # key into config.AUDIO_FILTERS
+
+    # When set, the next advance() re-plays the current track at this offset
+    # (used by /seek and /filter) instead of moving to the next queued track.
+    pending_seek: Optional[float] = None
 
     # Playback clock (monotonic, from bot.loop.time()) for the progress bar
     started: float = 0.0

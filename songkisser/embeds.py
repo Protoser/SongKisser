@@ -66,6 +66,8 @@ def now_playing_embed(track: Track, state: GuildState, elapsed: float) -> discor
     footer = f"🔊 {int(state.volume * 100)}%"
     if state.loop:
         footer += "  ·  🔁 Loop on"
+    if state.audio_filter and state.audio_filter != "none":
+        footer += f"  ·  🎛️ {state.audio_filter}"
     if state.queue:
         footer += f"  ·  📋 {len(state.queue)} in queue"
     embed.set_footer(text=footer)
@@ -107,3 +109,27 @@ def queue_embed(state: GuildState) -> discord.Embed:
     elif state.current is None:
         embed.description = "The queue is empty."
     return embed
+
+
+def config_embed(guild: discord.Guild, settings) -> discord.Embed:
+    """Render a guild's persisted settings (used by /config)."""
+    embed = discord.Embed(title="⚙️ Server settings", color=COLOR)
+    embed.set_author(name=guild.name, icon_url=guild.icon.url if guild.icon else None)
+    dj = guild.get_role(settings.dj_role_id) if settings.dj_role_id else None
+    embed.add_field(
+        name="DJ role",
+        value=dj.mention if dj else "Not set — everyone can control playback",
+        inline=False,
+    )
+    embed.add_field(
+        name="Default volume", value=f"{int(settings.default_volume * 100)}%", inline=False
+    )
+    return embed
+
+
+def lyrics_embed(title: str, lyrics: str) -> discord.Embed:
+    """Lyrics, truncated to Discord's 4096-char description limit."""
+    limit = 4096
+    if len(lyrics) > limit:
+        lyrics = lyrics[: limit - 1].rstrip() + "…"
+    return discord.Embed(title=f"🎤 {title}"[:256], description=lyrics, color=COLOR)

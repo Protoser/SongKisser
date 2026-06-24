@@ -8,21 +8,51 @@ channels, with a live "Now Playing" panel, artwork, and interactive buttons.
 | Command | Description |
 | --- | --- |
 | `/play <link or search>` | Play a YouTube link, or search and pick from a dropdown |
+| `/playnext <link or search>` | Add a song to the **front** of the queue |
 | `/search <station_name>` | Search internet radio and pick a station from a dropdown |
 | `/queue` | Show the queue |
 | `/nowplaying` | Show the current track with a progress bar |
 | `/skip` | Skip the current song/stream |
 | `/pause` · `/resume` | Pause or resume playback |
+| `/seek <time>` | Jump to a position in the current track (e.g. `1:30` or `90`) |
 | `/shuffle` | Shuffle the queue |
+| `/move <from> <to>` | Reorder a track within the queue |
 | `/remove <position>` | Remove a track from the queue |
 | `/clear` | Clear the queue (keeps the current track) |
 | `/volume <0-100>` | Set the playback volume |
+| `/filter <preset>` | Apply an audio effect (bassboost, nightcore, vaporwave, treble, 8d, none) |
 | `/loop` | Toggle looping of the current track |
+| `/lyrics [query]` | Show lyrics for the current song (or a given `Artist - Title`) |
 | `/stop` · `/leave` | Stop and disconnect |
 
 The **Now Playing** message updates live with a progress bar and carries buttons
 (pause/resume, skip, stop, loop, shuffle, queue, and a link to the source) so you
 can control playback without typing commands.
+
+### Admin commands
+
+Available to **global bot admins** (see `BOT_ADMINS`) and anyone with Discord's
+**Manage Server** permission:
+
+| Command | Description |
+| --- | --- |
+| `/join [channel]` | Make the bot join a specific voice channel (or yours) |
+| `/forceskip` · `/forcestop` | Override playback regardless of who's in voice |
+| `/config` | Show this server's settings |
+| `/setdjrole <role>` · `/cleardjrole` | Restrict playback control to a DJ role |
+| `/setdefaultvolume <0-100>` | Set the starting volume for new sessions |
+
+**Maintenance** (global bot admins / application owner only):
+
+| Command | Description |
+| --- | --- |
+| `/sync` | Re-sync the slash command tree |
+| `/reload <cog>` | Hot-reload a cog without restarting the bot |
+
+When a **DJ role** is configured, only members with that role (and admins) can use
+the playback-control commands and the Now Playing buttons; `/play`, `/search`,
+`/queue`, `/nowplaying`, and `/lyrics` stay open to everyone. With no DJ role set,
+everything is open — the default behaviour.
 
 ## Running with Docker Compose
 
@@ -100,3 +130,5 @@ to `.env` and set `DISCORD_TOKEN`), so there's nothing else to export.
 | Variable | Description |
 | --- | --- |
 | `DISCORD_TOKEN` | **Required.** Your Discord bot token. |
+| `BOT_ADMINS` | Optional. Comma-separated Discord user IDs granted global admin access. The application owner is always an admin. |
+| `SONGKISSER_DB` | Optional. Path to the SQLite file storing per-guild settings (default `songkisser.db`). Mount this as a volume under Docker for persistence. |

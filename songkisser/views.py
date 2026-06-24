@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Awaitable, Callable, Optional
 import discord
 
 from .embeds import now_playing_embed, queue_embed
+from .permissions import dj_allowed
 from .track import Track
 
 if TYPE_CHECKING:
@@ -52,12 +53,20 @@ class PlayerControls(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         voice = interaction.guild.voice_client
         user_voice = interaction.user.voice
-        if voice and user_voice and user_voice.channel == voice.channel:
-            return True
-        await interaction.response.send_message(
-            "Join my voice channel to use the controls.", ephemeral=True
-        )
-        return False
+        if not (voice and user_voice and user_voice.channel == voice.channel):
+            await interaction.response.send_message(
+                "Join my voice channel to use the controls.", ephemeral=True
+            )
+            return False
+        # Mirror the slash-command DJ gate: if a DJ role is set, only DJs/admins
+        # may drive the live controls.
+        if not dj_allowed(interaction):
+            await interaction.response.send_message(
+                "Only members with the DJ role (or server admins) can use these controls.",
+                ephemeral=True,
+            )
+            return False
+        return True
 
     async def _update_panel(self, interaction: discord.Interaction) -> None:
         state = self.manager.state(self.guild_id)

@@ -9,7 +9,13 @@ import discord
 import yt_dlp
 from radio_browser import RadioBrowser
 
-from .config import SEARCH_RESULTS, UPDATE_INTERVAL, VOLUME_STEP, YTDL_FORMAT_OPTIONS
+from .config import (
+    AUDIO_FILTERS,
+    SEARCH_RESULTS,
+    UPDATE_INTERVAL,
+    VOLUME_STEP,
+    YTDL_FORMAT_OPTIONS,
+)
 from .embeds import added_embed, now_playing_embed
 from .track import GuildState, Track, fmt_time
 from .views import PlayerControls
@@ -54,17 +60,21 @@ class MusicManager:
 
     # -- voice ---------------------------------------------------------------
 
+    async def connect_to(self, channel: discord.VoiceChannel) -> discord.VoiceClient:
+        """Connect to (or move to) a specific voice channel."""
+        voice_client = channel.guild.voice_client
+        if voice_client is None or not voice_client.is_connected():
+            return await channel.connect()
+        if voice_client.channel != channel:
+            await voice_client.move_to(channel)
+        return voice_client
+
     async def ensure_voice(self, interaction: discord.Interaction) -> Optional[discord.VoiceClient]:
         """Connect to (or move to) the caller's voice channel."""
         user_voice = interaction.user.voice
         if not user_voice or not user_voice.channel:
             return None
-        voice_client = interaction.guild.voice_client
-        if voice_client is None or not voice_client.is_connected():
-            return await user_voice.channel.connect()
-        if voice_client.channel != user_voice.channel:
-            await voice_client.move_to(user_voice.channel)
-        return voice_client
+        return await self.connect_to(user_voice.channel)
 
     def _voice(self, guild_id: int) -> Optional[discord.VoiceClient]:
         guild = self.bot.get_guild(guild_id)
@@ -143,10 +153,15 @@ class MusicManager:
     # -- sources -------------------------------------------------------------
 
     @staticmethod
-    def build_source(track: Track, volume: float) -> discord.AudioSource:
+    def build_source(
+        track: Track, volume: float, start: float = 0.0, audio_filter: str = "none"
+    ) -> discord.AudioSource:
         """Create a fresh ffmpeg source. Lists are passed for the ffmpeg options
-        so values (like header blobs) don't need shell quoting."""
+        so values (like header blobs) don't need shell quoting. `start` seeks to
+        an offset (fast, before-input seek); `audio_filter` applies an -af preset."""
         before = ["-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "5"]
+        if start > 0:
+            before += ["-ss", str(start)]
         headers = track.http_headers or {}
         user_agent = headers.get("User-Agent")
         if user_agent:
@@ -154,7 +169,11 @@ class MusicManager:
         other = {k: v for k, v in headers.items() if k.lower() != "user-agent"}
         if other:
             before += ["-headers", "".join(f"{k}: {v}\r\n" for k, v in other.items())]
-        source = discord.FFmpegPCMAudio(track.stream_url, before_options=before, options=["-vn"])
+        options = ["-vn"]
+        filtergraph = AUDIO_FILTERS.get(audio_filter, "")
+        if filtergraph:
+            options += ["-af", filtergraph]
+        source = discord.FFmpegPCMAudio(track.stream_url, before_options=before, options=options)
         return discord.PCMVolumeTransformer(source, volume=volume)
 
     # -- queue + playback ----------------------------------------------------
@@ -166,28 +185,40 @@ class MusicManager:
             except discord.DiscordException as e:
                 print(f"[announce] failed to send message: {e!r}")
 
-    async def enqueue(self, interaction: discord.Interaction, track: Track) -> None:
+    async def enqueue(
+        self, interaction: discord.Interaction, track: Track, at_front: bool = False
+    ) -> None:
         """Add a track to the guild queue and start playback if idle."""
         state = self.state(interaction.guild.id)
         state.text_channel = interaction.channel
         track.requested_by = interaction.user.display_name
-        state.queue.append(track)
 
         voice_client = interaction.guild.voice_client
-        if voice_client and (voice_client.is_playing() or voice_client.is_paused()):
-            await interaction.followup.send(embed=added_embed(track, len(state.queue)))
+        busy = bool(voice_client and (voice_client.is_playing() or voice_client.is_paused()))
+        if at_front:
+            state.queue.appendleft(track)
         else:
+            state.queue.append(track)
+
+        if busy:
+            position = 1 if at_front else len(state.queue)
+            await interaction.followup.send(embed=added_embed(track, position))
+        else:
+            # Fresh session: apply this guild's persisted default volume.
+            settings = getattr(self.bot, "settings", None)
+            if settings is not None:
+                state.volume = settings.get(interaction.guild.id).default_volume
             await interaction.followup.send(f"🎶 Starting **{track.title}**…")
             await self.advance(interaction.guild)
 
-    async def play_track(self, guild: discord.Guild, track: Track) -> None:
+    async def play_track(self, guild: discord.Guild, track: Track, start: float = 0.0) -> None:
         state = self.state(guild.id)
         voice_client = guild.voice_client
         if voice_client is None or not voice_client.is_connected():
             return
-        source = self.build_source(track, state.volume)
+        source = self.build_source(track, state.volume, start, state.audio_filter)
         state.current = track
-        state.started = self.bot.loop.time()
+        state.started = self.bot.loop.time() - start
         state.paused_since = None
         state.paused_total = 0.0
         voice_client.play(source, after=lambda err: self._after_play(guild, err))
@@ -205,6 +236,14 @@ class MusicManager:
 
     async def advance(self, guild: discord.Guild) -> None:
         state = self.state(guild.id)
+        # /seek and /filter stop the voice client to force a source rebuild; honour
+        # that here by replaying the *same* track at the requested offset.
+        if state.pending_seek is not None and state.current is not None:
+            offset = state.pending_seek
+            state.pending_seek = None
+            await self.play_track(guild, state.current, start=offset)
+            return
+        state.pending_seek = None
         if state.loop and state.current is not None:
             state.queue.append(state.current)
         state.current = None
@@ -350,6 +389,49 @@ class MusicManager:
             return True
         return False
 
+    def seek(self, guild_id: int, seconds: float) -> Optional[float]:
+        """Jump to an offset in the current track. Returns the clamped position,
+        or None if there's nothing seekable playing."""
+        state = self.state(guild_id)
+        voice_client = self._voice(guild_id)
+        track = state.current
+        if not track or track.is_live or not track.duration:
+            return None
+        if not voice_client or not (voice_client.is_playing() or voice_client.is_paused()):
+            return None
+        target = max(0.0, min(float(seconds), float(track.duration) - 1))
+        state.pending_seek = target
+        voice_client.stop()  # after-callback runs advance(), which replays at the offset
+        return target
+
+    def apply_filter(self, guild_id: int, preset: str) -> bool:
+        """Set the audio-filter preset, rebuilding the live source in place so the
+        change is audible immediately. Returns False if the preset is unknown."""
+        if preset not in AUDIO_FILTERS:
+            return False
+        state = self.state(guild_id)
+        state.audio_filter = preset
+        voice_client = self._voice(guild_id)
+        track = state.current
+        if track and voice_client and (voice_client.is_playing() or voice_client.is_paused()):
+            # Rebuild at the current position (start of stream for live audio).
+            position = 0.0 if track.is_live else state.elapsed(self.bot.loop.time())
+            state.pending_seek = position
+            voice_client.stop()
+        return True
+
+    def move(self, guild_id: int, frm: int, to: int) -> Optional[Track]:
+        """Move a queued track from one 1-based position to another."""
+        state = self.state(guild_id)
+        n = len(state.queue)
+        if not (1 <= frm <= n) or not (1 <= to <= n):
+            return None
+        items = list(state.queue)
+        track = items.pop(frm - 1)
+        items.insert(to - 1, track)
+        state.queue = deque(items)
+        return track
+
     def remove(self, guild_id: int, index: int) -> Optional[Track]:
         state = self.state(guild_id)
         if 1 <= index <= len(state.queue):
@@ -369,6 +451,8 @@ class MusicManager:
         state.queue.clear()
         state.current = None
         state.loop = False
+        state.audio_filter = "none"
+        state.pending_seek = None
         await self.stop_controller(guild_id)
         voice_client = self._voice(guild_id)
         if voice_client and voice_client.is_connected():
