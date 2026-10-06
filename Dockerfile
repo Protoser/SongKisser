@@ -14,9 +14,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY main.py .
 COPY songkisser ./songkisser
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-# Run as a non-root user
-RUN useradd --create-home --uid 1000 appuser
-USER appuser
+# The bot runs as a non-root user. The entrypoint starts as root only to make
+# the database directory writable (volumes are created owned by root), then
+# drops to appuser.
+RUN useradd --create-home --uid 1000 appuser \
+    && mkdir -p /data \
+    && chown appuser:appuser /data
 
+# Keep the settings database on /data so it can be mounted as a volume
+ENV SONGKISSER_DB=/data/songkisser.db
+VOLUME /data
+
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["python", "-u", "main.py"]
