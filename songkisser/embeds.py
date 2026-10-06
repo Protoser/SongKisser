@@ -133,3 +133,32 @@ def lyrics_embed(title: str, lyrics: str) -> discord.Embed:
     if len(lyrics) > limit:
         lyrics = lyrics[: limit - 1].rstrip() + "…"
     return discord.Embed(title=f"🎤 {title}"[:256], description=lyrics, color=COLOR)
+
+
+def _finish_text(limit: Optional[float]) -> str:
+    if limit is None:
+        return "If a song is playing then, I'll let it finish first."
+    if limit <= 0:
+        return "I'll disconnect you right away, even mid-song."
+    return (
+        f"If a song is playing then and at most {int(limit // 60)} min of it remain, "
+        "I'll let it finish first."
+    )
+
+
+def sleep_timer_embed(deadline: Optional[float], finish_limit: Optional[float]) -> discord.Embed:
+    """The /sleep_timer panel. `deadline` is a unix timestamp, or None if no
+    timer is running. Discord renders the relative timestamp as a live countdown."""
+    embed = discord.Embed(title="💤 Sleep timer", color=COLOR)
+    if deadline is None:
+        embed.description = (
+            "No sleep timer set. Use the buttons to start one, and I'll disconnect "
+            "you from voice when it runs out."
+        )
+    else:
+        stamp = int(deadline)
+        embed.description = (
+            f"You'll be disconnected from voice **<t:{stamp}:R>** (at <t:{stamp}:t>).\n\n"
+            + _finish_text(finish_limit)
+        )
+    return embed

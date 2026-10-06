@@ -7,9 +7,9 @@ channels, with a live "Now Playing" panel, artwork, and interactive buttons.
 
 | Command | Description |
 | --- | --- |
-| `/play <link or search>` | Play a YouTube link, or search and pick from a dropdown |
+| `/play <link or search>` · `/search` | Play a YouTube link, or search and pick from a dropdown |
 | `/playnext <link or search>` | Add a song to the **front** of the queue |
-| `/search <station_name>` | Search internet radio and pick a station from a dropdown |
+| `/radio <station_name>` | Search internet radio and pick a station from a dropdown |
 | `/queue` | Show the queue |
 | `/nowplaying` | Show the current track with a progress bar |
 | `/skip` | Skip the current song/stream |
@@ -24,10 +24,27 @@ channels, with a live "Now Playing" panel, artwork, and interactive buttons.
 | `/loop` | Toggle looping of the current track |
 | `/lyrics [query]` | Show lyrics for the current song (or a given `Artist - Title`) |
 | `/stop` · `/leave` | Stop and disconnect |
+| `/sleep_timer [time]` · `/st [time]` | Disconnect yourself from voice after a while (see below) |
 
 The **Now Playing** message updates live with a progress bar and carries buttons
 (pause/resume, skip, stop, loop, shuffle, queue, and a link to the source) so you
 can control playback without typing commands.
+
+The bot leaves the voice channel by itself once everyone else has left.
+
+### Sleep timer
+
+`/sleep_timer 30` (or `/st 30`) disconnects **you** from voice after 30 minutes;
+playback carries on for everyone else. Times can be a number of minutes (`30`),
+`45m`, `1h30m`, `90s` or `1:30`, from 1 minute up to 24 hours; `/st off` cancels.
+Run it without a time to open your timer panel, which has buttons to add or remove
+time and to cancel the timer.
+
+If a song is still playing when the timer runs out, the bot lets it finish when at
+most 5 minutes of it are left, and otherwise disconnects you right away. The panel
+has a dropdown to change that limit or to always finish the song. Timers end
+when you leave voice and are cleared if the bot restarts. The bot needs the
+**Move Members** permission to disconnect you.
 
 ### Admin commands
 
@@ -50,7 +67,7 @@ Available to **global bot admins** (see `BOT_ADMINS`) and anyone with Discord's
 | `/reload <cog>` | Hot-reload a cog without restarting the bot |
 
 When a **DJ role** is configured, only members with that role (and admins) can use
-the playback-control commands and the Now Playing buttons; `/play`, `/search`,
+the playback-control commands and the Now Playing buttons; `/play`, `/search`, `/radio`, `/sleep_timer`,
 `/queue`, `/nowplaying`, and `/lyrics` stay open to everyone. With no DJ role set,
 everything is open — the default behaviour.
 

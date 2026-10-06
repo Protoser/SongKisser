@@ -244,6 +244,7 @@ class MusicManager:
             await self.play_track(guild, state.current, start=offset)
             return
         state.pending_seek = None
+        state.tracks_finished += 1
         if state.loop and state.current is not None:
             state.queue.append(state.current)
         state.current = None

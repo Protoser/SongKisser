@@ -64,3 +64,31 @@ AUDIO_FILTERS = {
     "treble": "treble=g=10",
     "8d": "apulsator=hz=0.09",
 }
+
+# Sleep timer (/sleep_timer, /st) limits, in seconds
+SLEEP_MIN = 60
+SLEEP_MAX = 24 * 3600
+
+# When a sleep timer runs out mid-song, let the song finish first if at most this
+# many seconds of it remain (users can change it in the timer panel).
+SLEEP_DEFAULT_FINISH_LIMIT = 5 * 60
+
+# The choices offered in the timer panel: label -> limit (0 = never wait,
+# None = always let the song finish)
+SLEEP_FINISH_CHOICES = {
+    "Stop immediately": 0,
+    "Finish song if ≤ 2 min left": 2 * 60,
+    "Finish song if ≤ 5 min left": 5 * 60,
+    "Finish song if ≤ 10 min left": 10 * 60,
+    "Finish song if ≤ 15 min left": 15 * 60,
+    "Always finish the song": None,
+}
+
+# Buttons in the timer panel: label -> seconds to add (negative removes time)
+SLEEP_ADJUST_BUTTONS = {
+    "-5m": -5 * 60,
+    "+5m": 5 * 60,
+    "+15m": 15 * 60,
+    "+30m": 30 * 60,
+    "+1h": 60 * 60,
+}

@@ -4,13 +4,14 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ..config import AUDIO_FILTERS
+from ..config import AUDIO_FILTERS, SLEEP_MAX, SLEEP_MIN
 from ..embeds import lyrics_embed, now_playing_embed, queue_embed
 from ..lyrics import fetch_lyrics, guess_artist_title
 from ..permissions import dj_or_admin
 from ..player import MusicManager
-from ..track import fmt_time, parse_time
-from ..views import SearchView
+from ..sleep import SleepTimers
+from ..track import fmt_time, parse_duration, parse_time
+from ..views import SearchView, SleepTimerView
 
 
 def _is_url(query: str) -> bool:
@@ -25,10 +26,22 @@ class Music(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.manager = MusicManager(bot)
+        self.sleep_timers = SleepTimers(bot, self.manager)
+
+    async def cog_unload(self):
+        self.sleep_timers.cancel_all()
 
     @app_commands.command(name="play", description="Play a YouTube song or search term")
     @app_commands.describe(query="A YouTube link or search term")
     async def play(self, interaction: discord.Interaction, query: str):
+        await self._play(interaction, query)
+
+    @app_commands.command(name="search", description="Search YouTube and play a song (same as /play)")
+    @app_commands.describe(query="A YouTube link or search term")
+    async def search(self, interaction: discord.Interaction, query: str):
+        await self._play(interaction, query)
+
+    async def _play(self, interaction: discord.Interaction, query: str):
         if not _in_voice(interaction):
             await interaction.response.send_message(
                 f"{interaction.user.mention}, you're not connected to a voice channel!",
@@ -83,9 +96,9 @@ class Music(commands.Cog):
             print(f"[playnext] {e!r}")
             await interaction.followup.send(f"Couldn't play that: `{e}`")
 
-    @app_commands.command(name="search", description="Search and play an internet radio station")
+    @app_commands.command(name="radio", description="Search and play an internet radio station")
     @app_commands.describe(station_name="The name of the radio station to search")
-    async def search(self, interaction: discord.Interaction, station_name: str):
+    async def radio(self, interaction: discord.Interaction, station_name: str):
         if not _in_voice(interaction):
             await interaction.response.send_message(
                 "You're not connected to a voice channel!", ephemeral=True
@@ -281,15 +294,80 @@ class Music(commands.Cog):
         heading = f"{artist} - {title}" if artist else title
         await interaction.followup.send(embed=lyrics_embed(heading, text))
 
+    @app_commands.command(
+        name="sleep_timer", description="Get disconnected from voice after a set time"
+    )
+    @app_commands.describe(
+        time="e.g. 30 (minutes), 45m, 1h30m or 1:30. 'off' cancels. Leave empty for the timer panel"
+    )
+    async def sleep_timer(self, interaction: discord.Interaction, time: str | None = None):
+        await self._sleep_timer(interaction, time)
+
+    @app_commands.command(name="st", description="Sleep timer (same as /sleep_timer)")
+    @app_commands.describe(
+        time="e.g. 30 (minutes), 45m, 1h30m or 1:30. 'off' cancels. Leave empty for the timer panel"
+    )
+    async def st(self, interaction: discord.Interaction, time: str | None = None):
+        await self._sleep_timer(interaction, time)
+
+    async def _sleep_timer(self, interaction: discord.Interaction, time: str | None):
+        timers = self.sleep_timers
+        note = None
+        if time is not None:
+            if time.strip().lower() in ("off", "cancel", "stop", "0"):
+                cancelled = timers.cancel(interaction.guild.id, interaction.user.id)
+                await interaction.response.send_message(
+                    "💤 Sleep timer cancelled." if cancelled else "You don't have a sleep timer.",
+                    ephemeral=True,
+                )
+                return
+            seconds = parse_duration(time)
+            if seconds is None:
+                await interaction.response.send_message(
+                    "Use a time like `30` (minutes), `45m`, `1h30m` or `1:30`.", ephemeral=True
+                )
+                return
+            if not _in_voice(interaction):
+                await interaction.response.send_message(
+                    "Join a voice channel first, then set your sleep timer.", ephemeral=True
+                )
+                return
+            if timers.set(interaction.user, seconds, interaction.channel) != seconds:
+                note = f"Sleep timers run from {SLEEP_MIN // 60} min to {SLEEP_MAX // 3600} h."
+
+        # With a time the timer is already set; the panel then just shows it and
+        # allows adjusting. Without one, the panel is how the timer gets set.
+        view = SleepTimerView(timers, interaction)
+        await interaction.response.send_message(
+            note, embed=view.embed(), view=view, ephemeral=True
+        )
+
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        """Auto-disconnect and clear state if the bot is left alone in a channel."""
-        if member.id == self.bot.user.id and after.channel is None:
-            self.manager.drop_state(member.guild.id)
+        """Clear state when the bot disconnects, end sleep timers of members who
+        leave voice, and leave once no listeners remain in the bot's channel."""
+        guild = member.guild
+        if member.id == self.bot.user.id:
+            if after.channel is None:
+                self.manager.drop_state(guild.id)
             return
-        voice_client = member.guild.voice_client
-        if voice_client and voice_client.channel and len(voice_client.channel.members) == 1:
-            await self.manager.stop(member.guild.id)
+        if after.channel is None:
+            # Leaving voice ends that member's sleep timer.
+            self.sleep_timers.cancel(guild.id, member.id)
+
+        # Leave once the last listener (ignoring other bots) leaves our channel.
+        voice_client = guild.voice_client
+        if (
+            voice_client
+            and voice_client.channel
+            and before.channel == voice_client.channel
+            and after.channel != voice_client.channel
+            and not any(not m.bot for m in voice_client.channel.members)
+        ):
+            await self.manager.announce(
+                self.manager.state(guild.id), "👋 Everyone left, so I left the voice channel too."
+            )
+            await self.manager.stop(guild.id)
 
 
 async def setup(bot: commands.Bot):

@@ -1,5 +1,6 @@
 """The Track model and per-guild playback state."""
 import asyncio
+import re
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Optional
@@ -41,6 +42,30 @@ def parse_time(value: str) -> Optional[float]:
     return float(seconds)
 
 
+_DURATION_UNITS = re.compile(r"^(?:(\d+)\s*h)?\s*(?:(\d+)\s*m)?\s*(?:(\d+)\s*s)?$")
+
+
+def parse_duration(value: str) -> Optional[float]:
+    """Parse a timer length into seconds. A bare number means minutes ('30');
+    also accepts unit forms ('1h30m', '45m', '90s') and h:mm ('1:30').
+    Returns None if invalid."""
+    value = value.strip().lower().replace(" ", "")
+    if not value:
+        return None
+    if value.isdigit():
+        return int(value) * 60.0
+    if ":" in value:
+        parts = value.split(":")
+        if len(parts) != 2 or not all(p.isdigit() for p in parts):
+            return None
+        return (int(parts[0]) * 60 + int(parts[1])) * 60.0
+    match = _DURATION_UNITS.match(value)
+    if not match or not any(match.groups()):
+        return None
+    h, m, s = (int(g) if g else 0 for g in match.groups())
+    return float(h * 3600 + m * 60 + s)
+
+
 @dataclass
 class Track:
     """Metadata for a queued item. The actual ffmpeg source is built lazily, at
@@ -76,6 +101,10 @@ class GuildState:
     # When set, the next advance() re-plays the current track at this offset
     # (used by /seek and /filter) instead of moving to the next queued track.
     pending_seek: Optional[float] = None
+
+    # Bumped every time a track finishes or is skipped (not on seek/filter
+    # replays), so sleep timers can wait for "the current song to end".
+    tracks_finished: int = 0
 
     # Playback clock (monotonic, from bot.loop.time()) for the progress bar
     started: float = 0.0

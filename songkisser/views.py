@@ -1,16 +1,19 @@
-"""Interactive components: the Now Playing controls and the search picker."""
+"""Interactive components: the Now Playing controls, the search picker and the
+sleep timer panel."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Awaitable, Callable, Optional
 
 import discord
 
-from .embeds import now_playing_embed, queue_embed
+from .config import SLEEP_ADJUST_BUTTONS, SLEEP_FINISH_CHOICES
+from .embeds import now_playing_embed, queue_embed, sleep_timer_embed
 from .permissions import dj_allowed
 from .track import Track
 
 if TYPE_CHECKING:
     from .player import MusicManager
+    from .sleep import SleepTimers
 
 
 class PlayerControls(discord.ui.View):
@@ -162,3 +165,96 @@ class SearchView(discord.ui.View):
             return
         await self.manager.enqueue(interaction, track)
         self.stop()
+
+
+class SleepTimerView(discord.ui.View):
+    """The ephemeral /sleep_timer panel: add or remove time, cancel the timer, and
+    choose whether a song that's nearly over may finish first."""
+
+    def __init__(self, timers: "SleepTimers", origin: discord.Interaction):
+        # Ephemeral messages can only be edited for 15 minutes after the command.
+        super().__init__(timeout=14 * 60)
+        self.timers = timers
+        self.origin = origin
+        self.guild_id = origin.guild.id
+        self.user_id = origin.user.id
+
+        # Buttons that remove time; disabled while no timer is running.
+        self.minus_buttons: list[discord.ui.Button] = []
+        for label, delta in SLEEP_ADJUST_BUTTONS.items():
+            button = discord.ui.Button(label=label, style=discord.ButtonStyle.secondary)
+            button.callback = self._adjuster(delta)
+            if delta < 0:
+                self.minus_buttons.append(button)
+            self.add_item(button)
+
+        self.finish_select = discord.ui.Select(row=1)
+        self.finish_select.callback = self._on_finish
+        self.add_item(self.finish_select)
+
+        self.cancel_btn = discord.ui.Button(
+            label="Cancel timer", emoji="✖️", style=discord.ButtonStyle.danger, row=2
+        )
+        self.cancel_btn.callback = self._cancel
+        self.add_item(self.cancel_btn)
+
+        self._sync()
+
+    def embed(self) -> discord.Embed:
+        return sleep_timer_embed(
+            self.timers.deadline(self.guild_id, self.user_id),
+            self.timers.finish_limit(self.guild_id, self.user_id),
+        )
+
+    def _sync(self) -> None:
+        running = self.timers.deadline(self.guild_id, self.user_id) is not None
+        self.cancel_btn.disabled = not running
+        for button in self.minus_buttons:
+            button.disabled = not running
+        limit = self.timers.finish_limit(self.guild_id, self.user_id)
+        self.finish_select.options = [
+            discord.SelectOption(label=label, value=str(value), default=value == limit)
+            for label, value in SLEEP_FINISH_CHOICES.items()
+        ]
+
+    async def _refresh(self, interaction: discord.Interaction) -> None:
+        self._sync()
+        await interaction.response.edit_message(embed=self.embed(), view=self)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message(
+                "This is someone else's sleep timer. Use /sleep_timer for your own.",
+                ephemeral=True,
+            )
+            return False
+        return True
+
+    def _adjuster(self, delta: int):
+        async def callback(interaction: discord.Interaction) -> None:
+            running = self.timers.deadline(self.guild_id, self.user_id) is not None
+            if not running and interaction.user.voice is None:
+                await interaction.response.send_message(
+                    "Join a voice channel first, then start your sleep timer.", ephemeral=True
+                )
+                return
+            self.timers.adjust(interaction.user, delta, interaction.channel)
+            await self._refresh(interaction)
+
+        return callback
+
+    async def _on_finish(self, interaction: discord.Interaction) -> None:
+        value = self.finish_select.values[0]
+        limit = None if value == "None" else float(value)
+        self.timers.set_finish_limit(self.guild_id, self.user_id, limit)
+        await self._refresh(interaction)
+
+    async def _cancel(self, interaction: discord.Interaction) -> None:
+        self.timers.cancel(self.guild_id, self.user_id)
+        await self._refresh(interaction)
+
+    async def on_timeout(self) -> None:
+        try:
+            await self.origin.edit_original_response(embed=self.embed(), view=None)
+        except discord.DiscordException:
+            pass
