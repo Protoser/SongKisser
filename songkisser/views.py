@@ -8,6 +8,7 @@ import discord
 
 from .config import SLEEP_ADJUST_BUTTONS, SLEEP_FINISH_CHOICES
 from .embeds import now_playing_embed, queue_embed, sleep_timer_embed
+from .i18n import guild_language, t, user_language
 from .permissions import dj_allowed
 from .track import Track
 
@@ -24,6 +25,8 @@ class PlayerControls(discord.ui.View):
         super().__init__(timeout=None)
         self.manager = manager
         self.guild_id = guild_id
+        # The panel is seen by everyone, so its labels use the server language.
+        self.lang = guild_language(manager.bot, manager.bot.get_guild(guild_id))
 
         self.pause_btn = self._button("⏸️", discord.ButtonStyle.primary, self._pause_resume)
         self._button("⏭️", discord.ButtonStyle.secondary, self._skip)
@@ -32,10 +35,15 @@ class PlayerControls(discord.ui.View):
         self._button("🔀", discord.ButtonStyle.secondary, self._shuffle)
         self._button("🔉", discord.ButtonStyle.secondary, self._vol_down, row=1)
         self._button("🔊", discord.ButtonStyle.secondary, self._vol_up, row=1)
-        self._button("📋", discord.ButtonStyle.secondary, self._queue, label="Queue", row=1)
+        self._button(
+            "📋", discord.ButtonStyle.secondary, self._queue,
+            label=t(self.lang, "controls.queue"), row=1,
+        )
 
         if track.url:
-            self.add_item(discord.ui.Button(label="Source", url=track.url, row=1))
+            self.add_item(
+                discord.ui.Button(label=t(self.lang, "controls.source"), url=track.url, row=1)
+            )
 
         self._sync_visuals()
 
@@ -58,15 +66,14 @@ class PlayerControls(discord.ui.View):
         user_voice = interaction.user.voice
         if not (voice and user_voice and user_voice.channel == voice.channel):
             await interaction.response.send_message(
-                "Join my voice channel to use the controls.", ephemeral=True
+                t(user_language(interaction), "controls.join_voice"), ephemeral=True
             )
             return False
         # Mirror the slash-command DJ gate: if a DJ role is set, only DJs/admins
         # may drive the live controls.
         if not dj_allowed(interaction):
             await interaction.response.send_message(
-                "Only members with the DJ role (or server admins) can use these controls.",
-                ephemeral=True,
+                t(user_language(interaction), "controls.dj_only"), ephemeral=True
             )
             return False
         return True
@@ -79,7 +86,7 @@ class PlayerControls(discord.ui.View):
         self._sync_visuals()
         elapsed = state.elapsed(self.manager.bot.loop.time())
         await interaction.response.edit_message(
-            embed=now_playing_embed(state.current, state, elapsed), view=self
+            embed=now_playing_embed(state.current, state, elapsed, self.lang), view=self
         )
 
     async def _pause_resume(self, interaction: discord.Interaction) -> None:
@@ -100,7 +107,9 @@ class PlayerControls(discord.ui.View):
 
     async def _shuffle(self, interaction: discord.Interaction) -> None:
         self.manager.shuffle(self.guild_id)
-        await interaction.response.send_message("🔀 Shuffled the queue.", ephemeral=True)
+        await interaction.response.send_message(
+            t(user_language(interaction), "controls.shuffled"), ephemeral=True
+        )
 
     async def _vol_down(self, interaction: discord.Interaction) -> None:
         self.manager.volume_down(self.guild_id)
@@ -112,7 +121,9 @@ class PlayerControls(discord.ui.View):
 
     async def _queue(self, interaction: discord.Interaction) -> None:
         state = self.manager.state(self.guild_id)
-        await interaction.response.send_message(embed=queue_embed(state), ephemeral=True)
+        await interaction.response.send_message(
+            embed=queue_embed(state, user_language(interaction)), ephemeral=True
+        )
 
 
 class SearchView(discord.ui.View):
@@ -124,6 +135,7 @@ class SearchView(discord.ui.View):
         manager: "MusicManager",
         candidates: list[dict],
         resolver: Callable[[dict], Awaitable[Optional[Track]]],
+        lang: str,
     ):
         super().__init__(timeout=30)
         self.manager = manager
@@ -138,7 +150,9 @@ class SearchView(discord.ui.View):
             )
             for i, c in enumerate(candidates)
         ]
-        self.select = discord.ui.Select(placeholder="Pick a result…", options=options)
+        self.select = discord.ui.Select(
+            placeholder=t(lang, "controls.pick_result"), options=options
+        )
         self.select.callback = self._on_select
         self.add_item(self.select)
 
@@ -155,12 +169,14 @@ class SearchView(discord.ui.View):
             print(f"[search] resolve failed: {e!r}")
             track = None
         if track is None:
-            await interaction.followup.send("Couldn't load that result.", ephemeral=True)
+            await interaction.followup.send(
+                t(user_language(interaction), "controls.result_failed"), ephemeral=True
+            )
             return
 
         if await self.manager.ensure_voice(interaction) is None:
             await interaction.followup.send(
-                "You're not connected to a voice channel!", ephemeral=True
+                t(user_language(interaction), "music.not_in_voice"), ephemeral=True
             )
             return
         await self.manager.enqueue(interaction, track)
@@ -178,11 +194,14 @@ class SleepTimerView(discord.ui.View):
         self.origin = origin
         self.guild_id = origin.guild.id
         self.user_id = origin.user.id
+        self.lang = user_language(origin)
 
         # Buttons that remove time; disabled while no timer is running.
         self.minus_buttons: list[discord.ui.Button] = []
-        for label, delta in SLEEP_ADJUST_BUTTONS.items():
-            button = discord.ui.Button(label=label, style=discord.ButtonStyle.secondary)
+        for delta in SLEEP_ADJUST_BUTTONS:
+            button = discord.ui.Button(
+                label=self._adjust_label(delta), style=discord.ButtonStyle.secondary
+            )
             button.callback = self._adjuster(delta)
             if delta < 0:
                 self.minus_buttons.append(button)
@@ -193,7 +212,10 @@ class SleepTimerView(discord.ui.View):
         self.add_item(self.finish_select)
 
         self.cancel_btn = discord.ui.Button(
-            label="Cancel timer", emoji="✖️", style=discord.ButtonStyle.danger, row=2
+            label=t(self.lang, "sleep.cancel_button"),
+            emoji="✖️",
+            style=discord.ButtonStyle.danger,
+            row=2,
         )
         self.cancel_btn.callback = self._cancel
         self.add_item(self.cancel_btn)
@@ -204,7 +226,22 @@ class SleepTimerView(discord.ui.View):
         return sleep_timer_embed(
             self.timers.deadline(self.guild_id, self.user_id),
             self.timers.finish_limit(self.guild_id, self.user_id),
+            self.lang,
         )
+
+    def _adjust_label(self, delta: int) -> str:
+        if delta < 0:
+            return t(self.lang, "sleep.remove_minutes", count=-delta // 60)
+        if delta % 3600 == 0:
+            return t(self.lang, "sleep.add_hours", count=delta // 3600)
+        return t(self.lang, "sleep.add_minutes", count=delta // 60)
+
+    def _finish_label(self, limit) -> str:
+        if limit is None:
+            return t(self.lang, "sleep.option_always")
+        if limit <= 0:
+            return t(self.lang, "sleep.option_never")
+        return t(self.lang, "sleep.option_limit", minutes=limit // 60)
 
     def _sync(self) -> None:
         running = self.timers.deadline(self.guild_id, self.user_id) is not None
@@ -213,8 +250,10 @@ class SleepTimerView(discord.ui.View):
             button.disabled = not running
         limit = self.timers.finish_limit(self.guild_id, self.user_id)
         self.finish_select.options = [
-            discord.SelectOption(label=label, value=str(value), default=value == limit)
-            for label, value in SLEEP_FINISH_CHOICES.items()
+            discord.SelectOption(
+                label=self._finish_label(value), value=str(value), default=value == limit
+            )
+            for value in SLEEP_FINISH_CHOICES
         ]
 
     async def _refresh(self, interaction: discord.Interaction) -> None:
@@ -224,8 +263,7 @@ class SleepTimerView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user_id:
             await interaction.response.send_message(
-                "This is someone else's sleep timer. Use /sleep_timer for your own.",
-                ephemeral=True,
+                t(user_language(interaction), "sleep.not_yours"), ephemeral=True
             )
             return False
         return True
@@ -235,7 +273,7 @@ class SleepTimerView(discord.ui.View):
             running = self.timers.deadline(self.guild_id, self.user_id) is not None
             if not running and interaction.user.voice is None:
                 await interaction.response.send_message(
-                    "Join a voice channel first, then start your sleep timer.", ephemeral=True
+                    t(self.lang, "sleep.join_voice"), ephemeral=True
                 )
                 return
             self.timers.adjust(interaction.user, delta, interaction.channel)

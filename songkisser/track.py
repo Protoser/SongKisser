@@ -82,12 +82,6 @@ class Track:
     author: Optional[str] = None       # uploader/channel, or radio country
     extra: dict = field(default_factory=dict)  # source-specific bits for the embed
 
-    @property
-    def display_duration(self) -> str:
-        if self.is_live or not self.duration:
-            return "Live"
-        return fmt_time(self.duration)
-
 
 @dataclass
 class GuildState:

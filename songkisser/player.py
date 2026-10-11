@@ -17,6 +17,7 @@ from .config import (
     YTDL_FORMAT_OPTIONS,
 )
 from .embeds import added_embed, now_playing_embed
+from .i18n import guild_language, t, user_language
 from .track import GuildState, Track, fmt_time
 from .views import PlayerControls
 
@@ -75,6 +76,10 @@ class MusicManager:
         if not user_voice or not user_voice.channel:
             return None
         return await self.connect_to(user_voice.channel)
+
+    def lang(self, guild_id: int) -> str:
+        """Language for messages everyone in the guild sees."""
+        return guild_language(self.bot, self.bot.get_guild(guild_id))
 
     def _voice(self, guild_id: int) -> Optional[discord.VoiceClient]:
         guild = self.bot.get_guild(guild_id)
@@ -202,13 +207,17 @@ class MusicManager:
 
         if busy:
             position = 1 if at_front else len(state.queue)
-            await interaction.followup.send(embed=added_embed(track, position))
+            await interaction.followup.send(
+                embed=added_embed(track, position, user_language(interaction))
+            )
         else:
             # Fresh session: apply this guild's persisted default volume.
             settings = getattr(self.bot, "settings", None)
             if settings is not None:
                 state.volume = settings.get(interaction.guild.id).default_volume
-            await interaction.followup.send(f"🎶 Starting **{track.title}**…")
+            await interaction.followup.send(
+                t(user_language(interaction), "music.starting", title=track.title)
+            )
             await self.advance(interaction.guild)
 
     async def play_track(self, guild: discord.Guild, track: Track, start: float = 0.0) -> None:
@@ -252,7 +261,7 @@ class MusicManager:
             await self.play_track(guild, state.queue.popleft())
         else:
             await self.stop_controller(guild.id)
-            await self.announce(state, "✅ Queue ended.")
+            await self.announce(state, t(self.lang(guild.id), "music.queue_ended"))
             if guild.voice_client is not None:
                 await guild.voice_client.disconnect()
 
@@ -264,7 +273,7 @@ class MusicManager:
         if state.text_channel is None:
             return
         view = PlayerControls(self, guild.id, track)
-        embed = now_playing_embed(track, state, 0.0)
+        embed = now_playing_embed(track, state, 0.0, self.lang(guild.id))
         try:
             state.controller_message = await state.text_channel.send(embed=embed, view=view)
         except discord.DiscordException as e:
@@ -287,7 +296,7 @@ class MusicManager:
                 elapsed = state.elapsed(self.bot.loop.time())
                 try:
                     await state.controller_message.edit(
-                        embed=now_playing_embed(track, state, elapsed)
+                        embed=now_playing_embed(track, state, elapsed, self.lang(guild.id))
                     )
                 except discord.NotFound:
                     return
@@ -310,7 +319,8 @@ class MusicManager:
         view = PlayerControls(self, guild_id, state.current)
         try:
             await state.controller_message.edit(
-                embed=now_playing_embed(state.current, state, elapsed), view=view
+                embed=now_playing_embed(state.current, state, elapsed, self.lang(guild_id)),
+                view=view,
             )
         except discord.DiscordException:
             pass

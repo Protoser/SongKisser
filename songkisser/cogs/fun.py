@@ -2,19 +2,22 @@
 import asyncio
 
 import discord
-from discord import app_commands
 from discord.ext import commands
+
+from .. import i18n
+from ..i18n import t, user_language
 
 
 class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="fuck", description="Get weird with the bot")
+    @i18n.command("fuck")
     async def fuck(self, interaction: discord.Interaction):
-        await interaction.response.send_message("Y- Y- You wanna ... fuck? *blushes*.")
+        lang = user_language(interaction)
+        await interaction.response.send_message(t(lang, "fun.line1"))
         await asyncio.sleep(5)
-        await interaction.followup.send("I wasn't expecting that. *leans in for a kiss*.")
+        await interaction.followup.send(t(lang, "fun.line2"))
 
 
 async def setup(bot: commands.Bot):

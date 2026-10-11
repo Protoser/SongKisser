@@ -1,0 +1,284 @@
+{
+  "meta": {
+    "name": "Deutsch"
+  },
+  "commands": {
+    "play": {
+      "name": "abspielen",
+      "description": "Einen YouTube-Song oder Suchbegriff abspielen",
+      "options": {
+        "query": {"name": "suche", "description": "Ein YouTube-Link oder Suchbegriff"}
+      }
+    },
+    "search": {
+      "name": "suchen",
+      "description": "Auf YouTube suchen und einen Song abspielen (wie /abspielen)",
+      "options": {
+        "query": {"name": "suche", "description": "Ein YouTube-Link oder Suchbegriff"}
+      }
+    },
+    "playnext": {
+      "name": "alsnächstes",
+      "description": "Einen YouTube-Song an den Anfang der Warteschlange setzen",
+      "options": {
+        "query": {"name": "suche", "description": "Ein YouTube-Link oder Suchbegriff"}
+      }
+    },
+    "radio": {
+      "name": "radio",
+      "description": "Einen Internetradiosender suchen und abspielen",
+      "options": {
+        "station_name": {"name": "sender", "description": "Der Name des gesuchten Radiosenders"}
+      }
+    },
+    "skip": {"name": "überspringen", "description": "Den aktuellen Song oder Stream überspringen"},
+    "pause": {"name": "pause", "description": "Den aktuellen Titel pausieren"},
+    "resume": {"name": "fortsetzen", "description": "Einen pausierten Titel fortsetzen"},
+    "shuffle": {"name": "mischen", "description": "Die Warteschlange mischen"},
+    "remove": {
+      "name": "entfernen",
+      "description": "Einen Titel anhand seiner Position aus der Warteschlange entfernen",
+      "options": {
+        "position": {"name": "position", "description": "Die zu entfernende Position (siehe /warteschlange)"}
+      }
+    },
+    "clear": {"name": "leeren", "description": "Die Warteschlange leeren (der aktuelle Titel bleibt)"},
+    "queue": {"name": "warteschlange", "description": "Die aktuelle Warteschlange anzeigen"},
+    "nowplaying": {"name": "läuftgerade", "description": "Den aktuell laufenden Titel anzeigen"},
+    "volume": {
+      "name": "lautstärke",
+      "description": "Lautstärke einstellen (0-100)",
+      "options": {
+        "level": {"name": "stufe", "description": "Lautstärke von 0 bis 100"}
+      }
+    },
+    "loop": {"name": "wiederholen", "description": "Wiederholung des aktuellen Titels ein- oder ausschalten"},
+    "stop": {"name": "stopp", "description": "Stoppen und die Warteschlange leeren"},
+    "leave": {"name": "verlassen", "description": "Den Bot vom Sprachkanal trennen"},
+    "seek": {
+      "name": "springen",
+      "description": "Zu einer Stelle im aktuellen Titel springen",
+      "options": {
+        "position": {"name": "position", "description": "Ein Zeitstempel wie 1:30 oder Sekunden wie 90"}
+      }
+    },
+    "filter": {
+      "name": "filter",
+      "description": "Einen Audiofilter anwenden",
+      "options": {
+        "preset": {"name": "effekt", "description": "Der anzuwendende Effekt"}
+      }
+    },
+    "move": {
+      "name": "verschieben",
+      "description": "Einen Titel in der Warteschlange verschieben",
+      "options": {
+        "position": {"name": "position", "description": "Aktuelle Position (siehe /warteschlange)"},
+        "to": {"name": "nach", "description": "Neue Position"}
+      }
+    },
+    "lyrics": {
+      "name": "songtext",
+      "description": "Den Songtext des aktuellen (oder eines anderen) Songs anzeigen",
+      "options": {
+        "query": {"name": "suche", "description": "Optional 'Künstler - Titel', der stattdessen gesucht wird"}
+      }
+    },
+    "sleep_timer": {
+      "name": "schlaftimer",
+      "description": "Nach einer bestimmten Zeit vom Sprachkanal getrennt werden",
+      "help": "Nach einer Weile vom Sprachkanal getrennt werden: `30` (Minuten), `45m`, `1h30m` oder `1:30`. `off` bricht ab; ohne Zeit öffnet sich das Timer-Menü",
+      "options": {
+        "time": {"name": "zeit", "description": "z. B. 30 (Minuten), 45m, 1h30m oder 1:30. 'off' bricht ab. Leer lassen für das Timer-Menü"}
+      }
+    },
+    "st": {
+      "name": "st",
+      "description": "Schlaftimer (wie /schlaftimer)",
+      "options": {
+        "time": {"name": "zeit", "description": "z. B. 30 (Minuten), 45m, 1h30m oder 1:30. 'off' bricht ab. Leer lassen für das Timer-Menü"}
+      }
+    },
+    "help": {"name": "hilfe", "description": "Alle Befehle und ihre Funktion anzeigen"},
+    "fuck": {"name": "fuck", "description": "Werde komisch mit dem Bot"},
+    "join": {
+      "name": "beitreten",
+      "description": "[Admin] Den Bot einem Sprachkanal beitreten lassen",
+      "options": {
+        "channel": {"name": "kanal", "description": "Der Sprachkanal (standardmäßig deiner)"}
+      }
+    },
+    "forceskip": {"name": "zwangsüberspringen", "description": "[Admin] Den aktuellen Titel überspringen"},
+    "forcestop": {"name": "zwangsstopp", "description": "[Admin] Wiedergabe stoppen und trennen"},
+    "config": {"name": "einstellungen", "description": "[Admin] Die Einstellungen dieses Servers anzeigen"},
+    "setdjrole": {
+      "name": "djrollesetzen",
+      "description": "[Admin] Die Wiedergabesteuerung auf eine Rolle beschränken",
+      "options": {
+        "role": {"name": "rolle", "description": "Mitglieder mit dieser Rolle (und Admins) dürfen die Wiedergabe steuern"}
+      }
+    },
+    "cleardjrole": {"name": "djrolleentfernen", "description": "[Admin] Die DJ-Rollen-Beschränkung aufheben"},
+    "setdefaultvolume": {
+      "name": "standardlautstärke",
+      "description": "[Admin] Die Startlautstärke für neue Sitzungen festlegen",
+      "options": {
+        "level": {"name": "stufe", "description": "Standardlautstärke von 0 bis 100"}
+      }
+    },
+    "setlanguage": {
+      "name": "sprachesetzen",
+      "description": "[Admin] Die Sprache des Bots für diesen Server festlegen",
+      "options": {
+        "language": {"name": "sprache", "description": "Die Sprache, oder automatisch für die eigene Discord-Sprache jedes Nutzers"}
+      }
+    },
+    "sync": {"name": "sync", "description": "[Owner] Die Slash-Befehle neu synchronisieren"},
+    "reload": {
+      "name": "neuladen",
+      "description": "[Owner] Ein Modul neu laden",
+      "options": {
+        "cog": {"name": "modul", "description": "Welches Modul neu geladen werden soll"}
+      }
+    }
+  },
+  "help": {
+    "title": "📖 SongKisser-Befehle",
+    "description": "Klicke auf einen Befehl, um ihn zu nutzen. `<…>` ist Pflicht, `[…]` ist optional.",
+    "sections": {
+      "playback": "🎶 Wiedergabe",
+      "queue": "📋 Warteschlange & Klang",
+      "sleep": "💤 Schlaftimer",
+      "other": "✨ Sonstiges",
+      "admin": "🛠️ Admin",
+      "maintenance": "🔧 Wartung"
+    },
+    "footer": "Sprache: {language}"
+  },
+  "errors": {
+    "no_permission": "Du darfst diesen Befehl nicht verwenden.",
+    "generic": "Beim Ausführen des Befehls ist etwas schiefgelaufen.",
+    "bot_admin_only": "Dieser Befehl ist den Bot-Administratoren vorbehalten.",
+    "manage_server_required": "Du brauchst die Berechtigung **Server verwalten**, um diesen Befehl zu verwenden.",
+    "dj_only": "Nur Mitglieder mit der DJ-Rolle (oder Server-Admins) können diesen Befehl verwenden."
+  },
+  "music": {
+    "not_in_voice": "Du bist mit keinem Sprachkanal verbunden!",
+    "not_in_voice_mention": "{user}, du bist mit keinem Sprachkanal verbunden!",
+    "play_failed": "Das konnte nicht abgespielt werden: `{error}`",
+    "no_results": "Keine Ergebnisse gefunden.",
+    "results": "🔎 Ergebnisse für **{query}**:",
+    "no_station": "Kein Sender mit diesem Namen gefunden.",
+    "stations": "📻 Sender für **{query}**:",
+    "starting": "🎶 Starte **{title}**…",
+    "skipped": "⏭️ Übersprungen.",
+    "nothing_playing": "Es läuft gerade nichts.",
+    "paused": "⏸️ Pausiert.",
+    "resumed": "▶️ Fortgesetzt.",
+    "nothing_paused": "Es ist nichts pausiert.",
+    "shuffle_too_few": "Zu wenige Titel in der Warteschlange zum Mischen.",
+    "shuffled": "🔀 {count} Titel gemischt.",
+    "removed": "🗑️ **{title}** entfernt.",
+    "no_track_at_position": "An dieser Position gibt es keinen Titel.",
+    "cleared": "🧹 {count} Titel aus der Warteschlange entfernt.",
+    "queue_empty": "Die Warteschlange ist leer.",
+    "volume_set": "🔊 Lautstärke auf {level}% gesetzt.",
+    "loop_on": "🔁 Wiederholung aktiviert.",
+    "loop_off": "🔁 Wiederholung deaktiviert.",
+    "stopped": "⏹️ Gestoppt und Warteschlange geleert.",
+    "not_connected": "Der Bot ist nicht verbunden.",
+    "left": "👋 Sprachkanal verlassen.",
+    "seek_bad_time": "Nutze einen Zeitstempel wie `1:30` oder eine Anzahl Sekunden.",
+    "seek_unavailable": "Es läuft nichts, in dem man springen kann (in Livestreams geht das nicht).",
+    "seeked": "⏩ Zu `{position}` gesprungen.",
+    "filter_unknown": "Unbekannter Filter.",
+    "filter_off": "🎛️ Audiofilter deaktiviert.",
+    "filter_set": "🎛️ Audiofilter auf **{preset}** gesetzt.",
+    "move_invalid": "Ungültige Positionen in der Warteschlange.",
+    "moved": "↕️ **{title}** nach #{position} verschoben.",
+    "lyrics_nothing_playing": "Es läuft gerade nichts. Gib einen Song zum Nachschlagen an.",
+    "lyrics_not_found": "Kein Songtext für **{title}** gefunden.",
+    "queue_ended": "✅ Warteschlange beendet.",
+    "everyone_left": "👋 Alle sind gegangen, also habe ich den Sprachkanal auch verlassen."
+  },
+  "embeds": {
+    "live": "Live",
+    "live_bar": "🔴 **Live**",
+    "now_playing": "🎶 Läuft gerade",
+    "now_streaming": "🔴 Live-Stream",
+    "country": "Land",
+    "quality": "Qualität",
+    "tags": "Tags",
+    "channel": "Kanal",
+    "views": "Aufrufe",
+    "requested_by": "Gewünscht von",
+    "loop_on": "🔁 Wiederholung an",
+    "in_queue": "📋 {count} in der Warteschlange",
+    "added_to_queue": "➕ Zur Warteschlange hinzugefügt",
+    "duration": "Dauer",
+    "position": "Position",
+    "queue_title": "📋 Warteschlange",
+    "queue_now_playing": "Läuft gerade",
+    "queue_up_next": "Als Nächstes",
+    "queue_more": "...und **{count}** weitere.",
+    "settings_title": "⚙️ Server-Einstellungen",
+    "dj_role": "DJ-Rolle",
+    "dj_role_none": "Nicht gesetzt, alle können die Wiedergabe steuern",
+    "default_volume": "Standardlautstärke",
+    "language": "Sprache",
+    "language_auto": "Automatisch (Discord-Sprache jedes Nutzers)"
+  },
+  "controls": {
+    "join_voice": "Tritt meinem Sprachkanal bei, um die Steuerung zu nutzen.",
+    "dj_only": "Nur Mitglieder mit der DJ-Rolle (oder Server-Admins) können die Steuerung nutzen.",
+    "shuffled": "🔀 Warteschlange gemischt.",
+    "queue": "Warteschlange",
+    "source": "Quelle",
+    "pick_result": "Wähle ein Ergebnis…",
+    "result_failed": "Dieses Ergebnis konnte nicht geladen werden."
+  },
+  "sleep": {
+    "title": "💤 Schlaftimer",
+    "none": "Kein Schlaftimer gesetzt. Starte einen mit den Buttons, dann trenne ich dich vom Sprachkanal, wenn er abläuft.",
+    "active": "Du wirst **{relative}** vom Sprachkanal getrennt (um {time}).",
+    "finish_always": "Läuft dann noch ein Song, lasse ich ihn erst zu Ende laufen.",
+    "finish_never": "Ich trenne dich sofort, auch mitten im Song.",
+    "finish_limit": "Läuft dann noch ein Song und sind höchstens {minutes} Min. übrig, lasse ich ihn erst zu Ende laufen.",
+    "option_never": "Sofort stoppen",
+    "option_limit": "Song beenden, wenn ≤ {minutes} Min. übrig",
+    "option_always": "Song immer zu Ende spielen",
+    "add_minutes": "+{count} Min.",
+    "remove_minutes": "-{count} Min.",
+    "add_hours": "+{count} Std.",
+    "cancel_button": "Timer abbrechen",
+    "cancelled": "💤 Schlaftimer abgebrochen.",
+    "no_timer": "Du hast keinen Schlaftimer.",
+    "bad_time": "Nutze eine Zeit wie `30` (Minuten), `45m`, `1h30m` oder `1:30`.",
+    "join_voice": "Tritt zuerst einem Sprachkanal bei und setze dann deinen Schlaftimer.",
+    "limits": "Schlaftimer laufen zwischen {min} Min. und {max} Std.",
+    "not_yours": "Das ist der Schlaftimer von jemand anderem. Nutze /schlaftimer für deinen eigenen.",
+    "ended": "💤 Der Schlaftimer von {user} ist abgelaufen. Gute Nacht!",
+    "missing_permission": "💤 Der Schlaftimer von {user} ist abgelaufen, aber ich brauche die Berechtigung **Mitglieder verschieben**, um die Person zu trennen."
+  },
+  "admin": {
+    "join_pick_channel": "Wähle einen Sprachkanal oder tritt selbst einem bei.",
+    "engine_unavailable": "Die Musik-Engine ist nicht verfügbar.",
+    "join_failed": "Beitritt fehlgeschlagen: `{error}`",
+    "joined": "📡 **{channel}** beigetreten.",
+    "force_skipped": "⏭️ Zwangsweise übersprungen.",
+    "force_stopped": "⏹️ Zwangsweise gestoppt.",
+    "dj_role_set": "🎧 DJ-Rolle auf {role} gesetzt. Nur DJs und Admins können jetzt die Wiedergabe steuern.",
+    "dj_role_cleared": "🎧 DJ-Rolle entfernt. Alle können die Wiedergabe wieder steuern.",
+    "default_volume_set": "🔊 Standardlautstärke auf {level}% gesetzt.",
+    "language_option_auto": "Automatisch (Discord-Sprache jedes Nutzers)",
+    "language_set": "🌐 Serversprache auf **{language}** gesetzt.",
+    "language_cleared": "🌐 Serversprache entfernt. Alle bekommen wieder ihre eigene Discord-Sprache.",
+    "synced": "🔄 {count} Befehle synchronisiert.",
+    "reload_failed": "Neu laden fehlgeschlagen: `{error}`",
+    "reloaded": "♻️ **{cog}** neu geladen."
+  },
+  "fun": {
+    "line1": "W- W- Willst du ... ficken? *errötet*.",
+    "line2": "Damit hatte ich nicht gerechnet. *beugt sich für einen Kuss vor*."
+  }
+}

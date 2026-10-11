@@ -10,6 +10,7 @@ import discord
 from discord import app_commands
 
 from . import config
+from .i18n import t, user_language
 
 
 def is_global_admin(client: discord.Client, user_id: int) -> bool:
@@ -42,7 +43,7 @@ def bot_admin():
     def predicate(interaction: discord.Interaction) -> bool:
         if is_global_admin(interaction.client, interaction.user.id):
             return True
-        raise app_commands.CheckFailure("This command is restricted to the bot administrators.")
+        raise app_commands.CheckFailure(t(user_language(interaction), "errors.bot_admin_only"))
 
     return app_commands.check(predicate)
 
@@ -53,7 +54,7 @@ def guild_admin():
         if is_guild_admin(interaction):
             return True
         raise app_commands.CheckFailure(
-            "You need the **Manage Server** permission to use this command."
+            t(user_language(interaction), "errors.manage_server_required")
         )
 
     return app_commands.check(predicate)
@@ -64,8 +65,6 @@ def dj_or_admin():
     def predicate(interaction: discord.Interaction) -> bool:
         if dj_allowed(interaction):
             return True
-        raise app_commands.CheckFailure(
-            "Only members with the DJ role (or server admins) can use this command."
-        )
+        raise app_commands.CheckFailure(t(user_language(interaction), "errors.dj_only"))
 
     return app_commands.check(predicate)

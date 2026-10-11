@@ -14,6 +14,7 @@ from .config import (
     SLEEP_MAX,
     SLEEP_MIN,
 )
+from .i18n import guild_language, t
 
 if TYPE_CHECKING:
     from .player import MusicManager
@@ -120,15 +121,18 @@ class SleepTimers:
         except discord.Forbidden:
             await self._announce(
                 timer,
-                f"💤 {member.display_name}'s sleep timer ended, but I need the "
-                "**Move Members** permission to disconnect them.",
+                t(
+                    guild_language(self.bot, guild),
+                    "sleep.missing_permission",
+                    user=member.display_name,
+                ),
             )
             return
         except discord.HTTPException as e:
             print(f"[sleep] failed to disconnect {user_id} in guild {guild_id}: {e!r}")
             return
         await self._announce(
-            timer, f"💤 {member.display_name}'s sleep timer ended. Good night!"
+            timer, t(guild_language(self.bot, guild), "sleep.ended", user=member.display_name)
         )
 
     async def _wait_for_song(self, guild_id: int, user_id: int) -> None:

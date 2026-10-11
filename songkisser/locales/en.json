@@ -1,0 +1,284 @@
+{
+  "meta": {
+    "name": "English"
+  },
+  "commands": {
+    "play": {
+      "name": "play",
+      "description": "Play a YouTube song or search term",
+      "options": {
+        "query": {"name": "query", "description": "A YouTube link or search term"}
+      }
+    },
+    "search": {
+      "name": "search",
+      "description": "Search YouTube and play a song (same as /play)",
+      "options": {
+        "query": {"name": "query", "description": "A YouTube link or search term"}
+      }
+    },
+    "playnext": {
+      "name": "playnext",
+      "description": "Add a YouTube song to the front of the queue",
+      "options": {
+        "query": {"name": "query", "description": "A YouTube link or search term"}
+      }
+    },
+    "radio": {
+      "name": "radio",
+      "description": "Search and play an internet radio station",
+      "options": {
+        "station_name": {"name": "station_name", "description": "The name of the radio station to search"}
+      }
+    },
+    "skip": {"name": "skip", "description": "Skip the current song or stream"},
+    "pause": {"name": "pause", "description": "Pause the current track"},
+    "resume": {"name": "resume", "description": "Resume a paused track"},
+    "shuffle": {"name": "shuffle", "description": "Shuffle the queue"},
+    "remove": {
+      "name": "remove",
+      "description": "Remove a track from the queue by position",
+      "options": {
+        "position": {"name": "position", "description": "The queue position to remove (see /queue)"}
+      }
+    },
+    "clear": {"name": "clear", "description": "Clear the queue (keeps the current track)"},
+    "queue": {"name": "queue", "description": "Show the current queue"},
+    "nowplaying": {"name": "nowplaying", "description": "Show the currently playing track"},
+    "volume": {
+      "name": "volume",
+      "description": "Set playback volume (0-100)",
+      "options": {
+        "level": {"name": "level", "description": "Volume from 0 to 100"}
+      }
+    },
+    "loop": {"name": "loop", "description": "Toggle looping of the current track"},
+    "stop": {"name": "stop", "description": "Stop and clear the queue"},
+    "leave": {"name": "leave", "description": "Disconnect the bot from voice"},
+    "seek": {
+      "name": "seek",
+      "description": "Jump to a position in the current track",
+      "options": {
+        "position": {"name": "position", "description": "A timestamp like 1:30, or seconds like 90"}
+      }
+    },
+    "filter": {
+      "name": "filter",
+      "description": "Apply an audio-filter preset",
+      "options": {
+        "preset": {"name": "preset", "description": "The effect to apply"}
+      }
+    },
+    "move": {
+      "name": "move",
+      "description": "Move a queued track to a new position",
+      "options": {
+        "position": {"name": "position", "description": "Current position (see /queue)"},
+        "to": {"name": "to", "description": "New position"}
+      }
+    },
+    "lyrics": {
+      "name": "lyrics",
+      "description": "Show lyrics for the current (or a given) song",
+      "options": {
+        "query": {"name": "query", "description": "Optional 'Artist - Title' to look up instead"}
+      }
+    },
+    "sleep_timer": {
+      "name": "sleep_timer",
+      "description": "Get disconnected from voice after a set time",
+      "help": "Get disconnected from voice after a while: `30` (minutes), `45m`, `1h30m` or `1:30`. `off` cancels; leave the time empty for the timer panel",
+      "options": {
+        "time": {"name": "time", "description": "e.g. 30 (minutes), 45m, 1h30m or 1:30. 'off' cancels. Leave empty for the timer panel"}
+      }
+    },
+    "st": {
+      "name": "st",
+      "description": "Sleep timer (same as /sleep_timer)",
+      "options": {
+        "time": {"name": "time", "description": "e.g. 30 (minutes), 45m, 1h30m or 1:30. 'off' cancels. Leave empty for the timer panel"}
+      }
+    },
+    "help": {"name": "help", "description": "Show all commands and what they do"},
+    "fuck": {"name": "fuck", "description": "Get weird with the bot"},
+    "join": {
+      "name": "join",
+      "description": "[Admin] Make the bot join a voice channel",
+      "options": {
+        "channel": {"name": "channel", "description": "The voice channel to join (defaults to yours)"}
+      }
+    },
+    "forceskip": {"name": "forceskip", "description": "[Admin] Skip the current track"},
+    "forcestop": {"name": "forcestop", "description": "[Admin] Stop playback and disconnect"},
+    "config": {"name": "config", "description": "[Admin] Show this server's settings"},
+    "setdjrole": {
+      "name": "setdjrole",
+      "description": "[Admin] Restrict playback control to a role",
+      "options": {
+        "role": {"name": "role", "description": "Members with this role (and admins) may control playback"}
+      }
+    },
+    "cleardjrole": {"name": "cleardjrole", "description": "[Admin] Remove the DJ role restriction"},
+    "setdefaultvolume": {
+      "name": "setdefaultvolume",
+      "description": "[Admin] Set the starting volume for new sessions",
+      "options": {
+        "level": {"name": "level", "description": "Default volume from 0 to 100"}
+      }
+    },
+    "setlanguage": {
+      "name": "setlanguage",
+      "description": "[Admin] Set the bot's language for this server",
+      "options": {
+        "language": {"name": "language", "description": "The language to use, or automatic for each user's own Discord language"}
+      }
+    },
+    "sync": {"name": "sync", "description": "[Owner] Re-sync the slash command tree"},
+    "reload": {
+      "name": "reload",
+      "description": "[Owner] Reload a cog",
+      "options": {
+        "cog": {"name": "cog", "description": "Which cog to reload"}
+      }
+    }
+  },
+  "help": {
+    "title": "📖 SongKisser commands",
+    "description": "Click a command to use it. `<…>` is required, `[…]` is optional.",
+    "sections": {
+      "playback": "🎶 Playback",
+      "queue": "📋 Queue & sound",
+      "sleep": "💤 Sleep timer",
+      "other": "✨ Other",
+      "admin": "🛠️ Admin",
+      "maintenance": "🔧 Maintenance"
+    },
+    "footer": "Language: {language}"
+  },
+  "errors": {
+    "no_permission": "You don't have permission to use this command.",
+    "generic": "Something went wrong running that command.",
+    "bot_admin_only": "This command is restricted to the bot administrators.",
+    "manage_server_required": "You need the **Manage Server** permission to use this command.",
+    "dj_only": "Only members with the DJ role (or server admins) can use this command."
+  },
+  "music": {
+    "not_in_voice": "You're not connected to a voice channel!",
+    "not_in_voice_mention": "{user}, you're not connected to a voice channel!",
+    "play_failed": "Couldn't play that: `{error}`",
+    "no_results": "No results found.",
+    "results": "🔎 Results for **{query}**:",
+    "no_station": "No station found with that name.",
+    "stations": "📻 Stations for **{query}**:",
+    "starting": "🎶 Starting **{title}**…",
+    "skipped": "⏭️ Skipped.",
+    "nothing_playing": "Nothing is playing.",
+    "paused": "⏸️ Paused.",
+    "resumed": "▶️ Resumed.",
+    "nothing_paused": "Nothing is paused.",
+    "shuffle_too_few": "Not enough tracks in the queue to shuffle.",
+    "shuffled": "🔀 Shuffled {count} tracks.",
+    "removed": "🗑️ Removed **{title}**.",
+    "no_track_at_position": "There's no track at that position.",
+    "cleared": "🧹 Cleared {count} tracks from the queue.",
+    "queue_empty": "The queue is empty.",
+    "volume_set": "🔊 Volume set to {level}%.",
+    "loop_on": "🔁 Loop enabled.",
+    "loop_off": "🔁 Loop disabled.",
+    "stopped": "⏹️ Stopped and cleared the queue.",
+    "not_connected": "Bot is not connected.",
+    "left": "👋 Left the voice channel.",
+    "seek_bad_time": "Use a timestamp like `1:30` or a number of seconds.",
+    "seek_unavailable": "Nothing seekable is playing (live streams can't be seeked).",
+    "seeked": "⏩ Seeked to `{position}`.",
+    "filter_unknown": "Unknown filter.",
+    "filter_off": "🎛️ Audio filter disabled.",
+    "filter_set": "🎛️ Audio filter set to **{preset}**.",
+    "move_invalid": "Invalid queue positions.",
+    "moved": "↕️ Moved **{title}** to #{position}.",
+    "lyrics_nothing_playing": "Nothing is playing. Pass a song to look up.",
+    "lyrics_not_found": "Couldn't find lyrics for **{title}**.",
+    "queue_ended": "✅ Queue ended.",
+    "everyone_left": "👋 Everyone left, so I left the voice channel too."
+  },
+  "embeds": {
+    "live": "Live",
+    "live_bar": "🔴 **Live**",
+    "now_playing": "🎶 Now Playing",
+    "now_streaming": "🔴 Now Streaming",
+    "country": "Country",
+    "quality": "Quality",
+    "tags": "Tags",
+    "channel": "Channel",
+    "views": "Views",
+    "requested_by": "Requested by",
+    "loop_on": "🔁 Loop on",
+    "in_queue": "📋 {count} in queue",
+    "added_to_queue": "➕ Added to queue",
+    "duration": "Duration",
+    "position": "Position",
+    "queue_title": "📋 Queue",
+    "queue_now_playing": "Now playing",
+    "queue_up_next": "Up next",
+    "queue_more": "...and **{count}** more.",
+    "settings_title": "⚙️ Server settings",
+    "dj_role": "DJ role",
+    "dj_role_none": "Not set, everyone can control playback",
+    "default_volume": "Default volume",
+    "language": "Language",
+    "language_auto": "Automatic (each user's Discord language)"
+  },
+  "controls": {
+    "join_voice": "Join my voice channel to use the controls.",
+    "dj_only": "Only members with the DJ role (or server admins) can use these controls.",
+    "shuffled": "🔀 Shuffled the queue.",
+    "queue": "Queue",
+    "source": "Source",
+    "pick_result": "Pick a result…",
+    "result_failed": "Couldn't load that result."
+  },
+  "sleep": {
+    "title": "💤 Sleep timer",
+    "none": "No sleep timer set. Use the buttons to start one, and I'll disconnect you from voice when it runs out.",
+    "active": "You'll be disconnected from voice **{relative}** (at {time}).",
+    "finish_always": "If a song is playing then, I'll let it finish first.",
+    "finish_never": "I'll disconnect you right away, even mid-song.",
+    "finish_limit": "If a song is playing then and at most {minutes} min of it remain, I'll let it finish first.",
+    "option_never": "Stop immediately",
+    "option_limit": "Finish song if ≤ {minutes} min left",
+    "option_always": "Always finish the song",
+    "add_minutes": "+{count}m",
+    "remove_minutes": "-{count}m",
+    "add_hours": "+{count}h",
+    "cancel_button": "Cancel timer",
+    "cancelled": "💤 Sleep timer cancelled.",
+    "no_timer": "You don't have a sleep timer.",
+    "bad_time": "Use a time like `30` (minutes), `45m`, `1h30m` or `1:30`.",
+    "join_voice": "Join a voice channel first, then set your sleep timer.",
+    "limits": "Sleep timers run from {min} min to {max} h.",
+    "not_yours": "This is someone else's sleep timer. Use /sleep_timer for your own.",
+    "ended": "💤 {user}'s sleep timer ended. Good night!",
+    "missing_permission": "💤 {user}'s sleep timer ended, but I need the **Move Members** permission to disconnect them."
+  },
+  "admin": {
+    "join_pick_channel": "Pick a voice channel, or join one yourself first.",
+    "engine_unavailable": "Music engine unavailable.",
+    "join_failed": "Couldn't join: `{error}`",
+    "joined": "📡 Joined **{channel}**.",
+    "force_skipped": "⏭️ Force-skipped.",
+    "force_stopped": "⏹️ Force-stopped.",
+    "dj_role_set": "🎧 DJ role set to {role}. Only DJs and admins can now control playback.",
+    "dj_role_cleared": "🎧 DJ role cleared. Everyone can control playback again.",
+    "default_volume_set": "🔊 Default volume set to {level}%.",
+    "language_option_auto": "Automatic (each user's Discord language)",
+    "language_set": "🌐 Server language set to **{language}**.",
+    "language_cleared": "🌐 Server language cleared. Everyone gets their own Discord language again.",
+    "synced": "🔄 Synced {count} commands.",
+    "reload_failed": "Reload failed: `{error}`",
+    "reloaded": "♻️ Reloaded **{cog}**."
+  },
+  "fun": {
+    "line1": "Y- Y- You wanna ... fuck? *blushes*.",
+    "line2": "I wasn't expecting that. *leans in for a kiss*."
+  }
+}

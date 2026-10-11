@@ -25,6 +25,7 @@ channels, with a live "Now Playing" panel, artwork, and interactive buttons.
 | `/lyrics [query]` | Show lyrics for the current song (or a given `Artist - Title`) |
 | `/stop` · `/leave` | Stop and disconnect |
 | `/sleep_timer [time]` · `/st [time]` | Disconnect yourself from voice after a while (see below) |
+| `/help` | List every command and what it does |
 
 The **Now Playing** message updates live with a progress bar and carries buttons
 (pause/resume, skip, stop, loop, shuffle, queue, and a link to the source) so you
@@ -58,6 +59,7 @@ Available to **global bot admins** (see `BOT_ADMINS`) and anyone with Discord's
 | `/config` | Show this server's settings |
 | `/setdjrole <role>` · `/cleardjrole` | Restrict playback control to a DJ role |
 | `/setdefaultvolume <0-100>` | Set the starting volume for new sessions |
+| `/setlanguage <language>` | Use one language for the whole server, or "automatic" for each user's own |
 
 **Maintenance** (global bot admins / application owner only):
 
@@ -141,6 +143,28 @@ python main.py
 
 The bot loads your token from a `.env` file automatically (copy `.env.example`
 to `.env` and set `DISCORD_TOKEN`), so there's nothing else to export.
+
+## Languages
+
+The bot ships in **English** and **German**. Every command name, description and
+message lives in a language file under [`songkisser/locales/`](songkisser/locales),
+one file per language (`en.json`, `de.json`).
+
+- By default everyone gets the bot in their own Discord language (falling back
+  to English). Messages everyone sees, like the Now Playing panel, use the
+  server's language.
+- An admin can pin one language for the whole server with `/setlanguage`;
+  "automatic" switches back.
+- Command names and descriptions in Discord's command picker always follow each
+  user's own Discord language, because Discord controls that part.
+
+**Adding a language:** copy `songkisser/locales/en.json` to a file named after the
+[Discord locale code](https://discord.com/developers/docs/reference#locales)
+(for example `fr.json` or `es-ES.json`), translate the values (keep the keys and
+the `{placeholders}` as they are), set `meta.name` to the language's own name,
+and restart the bot. Missing keys fall back to English. Command and option
+names must be lowercase without spaces, at most 32 characters, and descriptions
+at most 100 characters.
 
 ## Configuration
 
